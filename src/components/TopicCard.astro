@@ -1,0 +1,22 @@
+---
+import Icon from './Icon.astro';
+import type { Topic } from '../lib/site';
+import { href } from '../lib/url';
+
+interface Props {
+  topic: Topic;
+  count: number;
+}
+
+const { topic, count } = Astro.props;
+---
+
+<a class="topic-card" href={href(`/topics/${topic.slug}/`)} style={`--accent: ${topic.accent};`}>
+  <span class="topic-icon"><Icon name={topic.icon} size={23} /></span>
+  <h3>{topic.label}</h3>
+  <p>{topic.description}</p>
+  <span class="topic-foot">
+    {count} {count === 1 ? 'note' : 'notes'}
+    <Icon name="arrow-right" size={16} />
+  </span>
+</a>

@@ -1,0 +1,68 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Icon from '../components/Icon.astro';
+import { SITE, TOPICS } from '../lib/site';
+import { href } from '../lib/url';
+---
+
+<BaseLayout
+  title="About"
+  description="About Layer 8: a reading-first notebook for networking, scripting, Linux, and security."
+>
+  <div class="narrow">
+    <header class="page-head">
+      <span class="eyebrow"><span class="dot"></span> About</span>
+      <h1>A notebook for the layers beneath the app.</h1>
+    </header>
+
+    <div class="prose" style="padding-bottom:40px">
+      <p>
+        <strong>{SITE.name}</strong> is a reading-first notebook about the parts of
+        computing that are easy to use and hard to explain: packets, names,
+        processes, shells, and the trust boundaries between them.
+      </p>
+
+      <p>
+        Most posts start as a note to myself. Something broke, I learned why, and
+        I wrote it down in a form I would want to find next time. The goal is not
+        to cover everything. It is to make a small number of ideas genuinely clear.
+      </p>
+
+      <h2>What you will find here</h2>
+
+      <ul>
+        {Object.values(TOPICS).map((topic) => (
+          <li>
+            <strong>{topic.label}</strong> — {topic.description}
+          </li>
+        ))}
+      </ul>
+
+      <h2>How to read it</h2>
+
+      <p>
+        Start with a topic, or use the search bar on the home page. Notes are
+        filed by topic rather than by date, so a single area reads like a short
+        course. Each post ends with related notes if you want to keep going.
+      </p>
+
+      <h2>Who writes this</h2>
+
+      <p>
+        {SITE.author}. I work with systems, networks, and automation, and I prefer
+        diagrams and small experiments to buzzwords. You can find the code and
+        corrections on <a href={SITE.github} target="_blank" rel="noreferrer">GitHub</a>.
+      </p>
+
+      <blockquote>
+        The best documentation is the note you wrote for yourself six months ago.
+      </blockquote>
+    </div>
+
+    <div style="padding-bottom:60px">
+      <a class="btn btn-primary" href={href('/writing/')}>
+        Read the notes <Icon name="arrow-right" size={16} />
+      </a>
+    </div>
+  </div>
+</BaseLayout>

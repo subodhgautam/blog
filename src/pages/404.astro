@@ -1,0 +1,24 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Icon from '../components/Icon.astro';
+import { href } from '../lib/url';
+---
+
+<BaseLayout title="Page not found" description="That note does not exist.">
+  <div class="narrow">
+    <header class="page-head" style="text-align:center">
+      <span class="eyebrow"><span class="dot"></span> 404</span>
+      <h1>This layer is missing.</h1>
+      <p class="page-lede" style="margin-inline:auto">
+        The note you are looking for moved, was renamed, or never existed. The
+        archive is still where you left it.
+      </p>
+      <div style="display:flex;gap:10px;justify-content:center;margin-top:28px;flex-wrap:wrap">
+        <a class="btn btn-primary" href={href('/')}>
+          Back home <Icon name="arrow-right" size={16} />
+        </a>
+        <a class="btn" href={href('/writing/')}>Browse writing</a>
+      </div>
+    </header>
+  </div>
+</BaseLayout>

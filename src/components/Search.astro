@@ -1,0 +1,271 @@
+---
+import Icon from './Icon.astro';
+
+interface Props {
+  placeholder?: string;
+}
+
+const { placeholder = 'Search notes, topics, or tags…' } = Astro.props;
+
+const suggestions = ['subnetting', 'PowerShell pipelines', 'DNS', 'systemd'];
+---
+
+<div class="search" data-search>
+  <div class="search-box">
+    <form class="search-field" role="search" data-search-form>
+      <Icon name="search" size={20} />
+      <input
+        type="search"
+        name="q"
+        placeholder={placeholder}
+        aria-label="Search the blog"
+        autocomplete="off"
+        spellcheck="false"
+        data-search-input
+      />
+      <kbd>/</kbd>
+    </form>
+
+    <div class="search-results" data-search-results hidden aria-live="polite"></div>
+  </div>
+
+  <div class="hero-hint">
+    <span>Try</span>
+    {suggestions.map((suggestion) => (
+      <button class="suggestion" type="button" data-search-suggestion={suggestion}>
+        {suggestion}
+      </button>
+    ))}
+  </div>
+</div>
+
+<script>
+  type SearchEntry = {
+    title: string;
+    description: string;
+    category: string;
+    categoryLabel: string;
+    accent: string;
+    tags: string[];
+    url: string;
+    body: string;
+  };
+
+  const root = document.querySelector<HTMLElement>('[data-search]');
+
+  if (root) {
+    const form = root.querySelector<HTMLFormElement>('[data-search-form]');
+    const input = root.querySelector<HTMLInputElement>('[data-search-input]');
+    const panel = root.querySelector<HTMLElement>('[data-search-results]');
+    const endpoint = `${import.meta.env.BASE_URL}search.json`;
+
+    let entries: SearchEntry[] | null = null;
+    let request: Promise<void> | null = null;
+
+    const load = () => {
+      if (entries) return Promise.resolve();
+      if (request) return request;
+
+      request = fetch(endpoint)
+        .then((response) => {
+          if (!response.ok) throw new Error(`Search index failed: ${response.status}`);
+          return response.json() as Promise<SearchEntry[]>;
+        })
+        .then((data) => {
+          entries = data;
+        })
+        .catch(() => {
+          entries = [];
+          request = null;
+        });
+
+      return request;
+    };
+
+    const createResult = (entry: SearchEntry) => {
+      const link = document.createElement('a');
+      link.className = 'search-result';
+      link.href = entry.url;
+      link.style.setProperty('--accent', entry.accent);
+
+      const top = document.createElement('div');
+      top.className = 'search-result-top';
+
+      const category = document.createElement('span');
+      category.className = 'search-result-cat';
+      category.textContent = entry.categoryLabel;
+
+      const title = document.createElement('span');
+      title.className = 'search-result-title';
+      title.textContent = entry.title;
+
+      top.append(category, title);
+
+      const description = document.createElement('p');
+      description.className = 'search-result-desc';
+      description.textContent = entry.description;
+
+      link.append(top, description);
+      return link;
+    };
+
+    const scoreEntry = (entry: SearchEntry, tokens: string[]) => {
+      const title = entry.title.toLowerCase();
+      const description = entry.description.toLowerCase();
+      const tags = entry.tags.join(' ').toLowerCase();
+      const category = entry.categoryLabel.toLowerCase();
+      const body = entry.body.toLowerCase();
+
+      let score = 0;
+      for (const token of tokens) {
+        if (!title.includes(token) && !description.includes(token) && !tags.includes(token) && !category.includes(token) && !body.includes(token)) {
+          return -1;
+        }
+        if (title.includes(token)) score += 8;
+        if (tags.includes(token)) score += 5;
+        if (description.includes(token)) score += 3;
+        if (category.includes(token)) score += 2;
+        score += 1;
+      }
+      return score;
+    };
+
+    const render = async () => {
+      if (!panel || !input) return;
+
+      const query = input.value.trim();
+      if (!query) {
+        panel.hidden = true;
+        panel.replaceChildren();
+        return;
+      }
+
+      panel.hidden = false;
+
+      if (!entries) {
+        const loading = document.createElement('div');
+        loading.className = 'search-empty';
+        loading.textContent = 'Searching…';
+        panel.replaceChildren(loading);
+      }
+
+      await load();
+
+      const tokens = query.toLowerCase().split(/\s+/).filter(Boolean);
+      const matches = (entries ?? [])
+        .map((entry) => ({ entry, score: scoreEntry(entry, tokens) }))
+        .filter((result) => result.score >= 0)
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 8)
+        .map((result) => result.entry);
+
+      panel.replaceChildren();
+
+      if (matches.length === 0) {
+        const empty = document.createElement('div');
+        empty.className = 'search-empty';
+        const strong = document.createElement('strong');
+        strong.textContent = `No notes matching “${query}”`;
+        const hint = document.createElement('p');
+        hint.textContent = 'Try a broader term, like networking, SSH, or variables.';
+        empty.append(strong, hint);
+        panel.append(empty);
+        return;
+      }
+
+      const label = document.createElement('div');
+      label.className = 'search-group-label';
+      label.textContent = `${matches.length} ${matches.length === 1 ? 'note' : 'notes'}`;
+      panel.append(label);
+
+      for (const entry of matches) {
+        panel.append(createResult(entry));
+      }
+    };
+
+    let debounce = 0;
+    input?.addEventListener('input', () => {
+      window.clearTimeout(debounce);
+      debounce = window.setTimeout(render, 90);
+    });
+
+    input?.addEventListener('focus', () => {
+      void load();
+      if (input.value.trim()) void render();
+    });
+
+    form?.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const first = panel?.querySelector<HTMLAnchorElement>('a.search-result');
+      if (first) {
+        window.location.href = first.href;
+        return;
+      }
+      void render();
+    });
+
+    input?.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        const first = panel?.querySelector<HTMLAnchorElement>('a.search-result');
+        if (first) window.location.href = first.href;
+        else void render();
+      }
+      if (event.key === 'Escape') {
+        panel && (panel.hidden = true);
+        input.blur();
+      }
+      if (event.key === 'ArrowDown') {
+        const first = panel?.querySelector<HTMLAnchorElement>('a.search-result');
+        if (first) {
+          event.preventDefault();
+          first.focus();
+        }
+      }
+    });
+
+    panel?.addEventListener('keydown', (event) => {
+      const target = event.target as HTMLElement;
+      if (event.key === 'Escape') {
+        panel.hidden = true;
+        input?.focus();
+      }
+      if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+        const links = Array.from(panel.querySelectorAll<HTMLAnchorElement>('a.search-result'));
+        const index = links.indexOf(target as HTMLAnchorElement);
+        if (index === -1) return;
+        event.preventDefault();
+        const next = event.key === 'ArrowDown' ? links[index + 1] : links[index - 1];
+        if (next) next.focus();
+        else if (event.key === 'ArrowUp') input?.focus();
+      }
+    });
+
+    document.querySelectorAll<HTMLButtonElement>('[data-search-suggestion]').forEach((button) => {
+      button.addEventListener('click', () => {
+        if (!input) return;
+        input.value = button.dataset.searchSuggestion ?? '';
+        input.focus();
+        void render();
+      });
+    });
+
+    document.addEventListener('click', (event) => {
+      const target = event.target as Node;
+      if (panel && !root.contains(target)) {
+        panel.hidden = true;
+      }
+    });
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key !== '/' || event.metaKey || event.ctrlKey || event.altKey) return;
+      const active = document.activeElement as HTMLElement | null;
+      const typing =
+        active &&
+        (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || active.isContentEditable);
+      if (typing) return;
+      event.preventDefault();
+      input?.focus();
+    });
+  }
+</script>

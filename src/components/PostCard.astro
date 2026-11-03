@@ -1,0 +1,36 @@
+---
+import Icon from './Icon.astro';
+import { formatDate } from '../lib/site';
+import { href } from '../lib/url';
+import { postPath, postReadTime, postTopic, type Post } from '../lib/posts';
+
+interface Props {
+  post: Post;
+  reveal?: number;
+}
+
+const { post, reveal } = Astro.props;
+const topic = postTopic(post);
+const url = href(postPath(post));
+---
+
+<article class:list={['post-card', reveal ? `reveal reveal-${reveal}` : '']} style={`--accent: ${topic.accent};`}>
+  <div class="post-card-top">
+    <a class="topic-badge" href={href(`/topics/${topic.slug}/`)}>
+      <Icon name={topic.icon} size={16} />
+      {topic.label}
+    </a>
+  </div>
+
+  <h3 class="post-card-title">
+    <a href={url}>{post.data.title}</a>
+  </h3>
+
+  <p class="post-card-desc">{post.data.description}</p>
+
+  <div class="post-meta">
+    <span>{postReadTime(post)}</span>
+    <span class="sep">·</span>
+    <span>{formatDate(post.data.pubDate)}</span>
+  </div>
+</article>

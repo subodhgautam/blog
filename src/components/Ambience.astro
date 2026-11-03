@@ -1,0 +1,110 @@
+---
+import Icon from './Icon.astro';
+import { AMBIENCES } from '../lib/site';
+import { href } from '../lib/url';
+---
+
+<div class="ambience" data-ambience>
+  <button
+    class="icon-btn ambience-toggle"
+    type="button"
+    data-ambience-toggle
+    aria-expanded="false"
+    aria-controls="reading-room"
+    aria-label="Change reading room ambience"
+  >
+    <Icon name="palette" size={18} />
+    <span class="ambience-label">Reading room</span>
+  </button>
+
+  <div class="ambience-panel" id="reading-room" data-ambience-panel hidden>
+    <div class="ambience-head">
+      <p class="ambience-title">Reading room</p>
+      <p class="ambience-sub">Choose the light behind the page.</p>
+    </div>
+
+    <div class="ambience-grid">
+      {AMBIENCES.map((ambience) => (
+        <button
+          class="ambience-option"
+          type="button"
+          data-ambience-option={ambience.id}
+          aria-pressed="false"
+          style={
+            ambience.file
+              ? `--preview: url('${href(`/wallpapers/${ambience.file}`)}')`
+              : `--preview: radial-gradient(circle at 38% 32%, #f3ca8c, #8a4d2e 55%, #2a1a12 100%)`
+          }
+        >
+          <span class="ambience-preview" aria-hidden="true"></span>
+          <span class="ambience-copy">
+            <span class="ambience-name">
+              {ambience.label}
+              <span class="ambience-check"><Icon name="check" size={13} /></span>
+            </span>
+            <span class="ambience-note">{ambience.note}</span>
+          </span>
+        </button>
+      ))}
+    </div>
+
+    <p class="ambience-foot">Saved on this device.</p>
+  </div>
+</div>
+
+<script>
+  const root = document.querySelector<HTMLElement>('[data-ambience]');
+
+  if (root) {
+    const toggle = root.querySelector<HTMLButtonElement>('[data-ambience-toggle]');
+    const panel = root.querySelector<HTMLElement>('[data-ambience-panel]');
+    const options = Array.from(
+      root.querySelectorAll<HTMLButtonElement>('[data-ambience-option]'),
+    );
+
+    const setOpen = (open: boolean) => {
+      if (!panel || !toggle) return;
+      panel.hidden = !open;
+      toggle.setAttribute('aria-expanded', String(open));
+    };
+
+    const setActive = (id: string) => {
+      document.documentElement.dataset.ambient = id;
+      for (const option of options) {
+        const active = option.dataset.ambienceOption === id;
+        option.classList.toggle('is-active', active);
+        option.setAttribute('aria-pressed', String(active));
+      }
+    };
+
+    setActive(document.documentElement.dataset.ambient || 'hearth');
+
+    toggle?.addEventListener('click', () => {
+      setOpen(panel?.hidden ?? false);
+    });
+
+    options.forEach((option) => {
+      option.addEventListener('click', () => {
+        const id = option.dataset.ambienceOption;
+        if (!id) return;
+        setActive(id);
+        try {
+          localStorage.setItem('ambient', id);
+        } catch {
+          /* storage may be unavailable */
+        }
+      });
+    });
+
+    document.addEventListener('click', (event) => {
+      if (!root.contains(event.target as Node)) setOpen(false);
+    });
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && !panel?.hidden) {
+        setOpen(false);
+        toggle?.focus();
+      }
+    });
+  }
+</script>

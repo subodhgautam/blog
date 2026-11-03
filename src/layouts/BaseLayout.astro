@@ -1,0 +1,97 @@
+---
+import '@fontsource-variable/inter';
+import '@fontsource-variable/newsreader';
+import '@fontsource-variable/jetbrains-mono';
+import '../styles/global.css';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import { AMBIENCES, SITE } from '../lib/site';
+import { href } from '../lib/url';
+
+interface Props {
+  title?: string;
+  description?: string;
+  type?: 'website' | 'article';
+  image?: string;
+}
+
+const {
+  title = SITE.title,
+  description = SITE.description,
+  type = 'website',
+} = Astro.props;
+
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const pageTitle = title.includes(SITE.name) ? title : `${title} — ${SITE.name}`;
+
+const wallpaperCss = AMBIENCES.filter((ambience) => ambience.file)
+  .map(
+    (ambience) =>
+      `html[data-ambient="${ambience.id}"]{--wallpaper:url("${href(`/wallpapers/${ambience.file}`)}")}`,
+  )
+  .join('\n');
+---
+
+<!doctype html>
+<html lang="en" data-theme="dark" data-ambient="hearth">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{pageTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <meta name="generator" content={Astro.generator} />
+    <meta name="theme-color" content="#17120e" />
+    <meta name="color-scheme" content="dark light" />
+    <link rel="icon" type="image/svg+xml" href={href('/favicon.svg')} />
+    <link rel="alternate" type="application/rss+xml" title={`${SITE.name} RSS`} href={href('/rss.xml')} />
+    <link rel="sitemap" href={href('/sitemap-index.xml')} />
+
+    <meta property="og:type" content={type} />
+    <meta property="og:site_name" content={SITE.name} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content={pageTitle} />
+    <meta name="twitter:description" content={description} />
+
+    <style is:inline set:html={wallpaperCss}></style>
+
+    <script is:inline>
+      (() => {
+        const allowed = ['lamp', 'hearth', 'rain', 'grove', 'dusk'];
+        try {
+          const theme = localStorage.getItem('theme');
+          const ambient = localStorage.getItem('ambient');
+          document.documentElement.dataset.theme = theme === 'light' ? 'light' : 'dark';
+          document.documentElement.dataset.ambient =
+            ambient && allowed.includes(ambient) ? ambient : 'hearth';
+        } catch {
+          document.documentElement.dataset.theme = 'dark';
+          document.documentElement.dataset.ambient = 'hearth';
+        }
+      })();
+    </script>
+
+    <script is:inline type="application/ld+json" set:html={JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'Blog',
+      name: SITE.name,
+      description: SITE.description,
+      url: canonical.origin + href('/'),
+      author: {
+        '@type': 'Person',
+        name: SITE.author,
+      },
+    })} />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <Header />
+    <main id="main">
+      <slot />
+    </main>
+    <Footer />
+  </body>
+</html>

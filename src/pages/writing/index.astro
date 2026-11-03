@@ -1,0 +1,71 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Icon from '../../components/Icon.astro';
+import PostRow from '../../components/PostRow.astro';
+import { getPublishedPosts } from '../../lib/posts';
+
+const posts = await getPublishedPosts();
+---
+
+<BaseLayout
+  title="Writing"
+  description="Every field note, newest first. Search by title, topic, or tag."
+>
+  <div class="shell">
+    <header class="page-head">
+      <span class="eyebrow"><span class="dot"></span> The archive</span>
+      <h1>Writing</h1>
+      <p class="page-lede">
+        A quiet shelf of notes, newest first. Open any row to read — no detours.
+      </p>
+    </header>
+
+    <div class="filter-bar" id="search">
+      <Icon name="search" size={19} />
+      <input
+        type="search"
+        placeholder="Filter notes by title, topic, or tag…"
+        aria-label="Filter notes"
+        data-filter-input
+        autocomplete="off"
+      />
+      <span class="filter-count" data-filter-count>{posts.length} notes</span>
+    </div>
+
+    <div class="post-list" data-post-list>
+      {posts.map((post) => <PostRow post={post} />)}
+    </div>
+
+    <div class="empty-state" data-filter-empty hidden>
+      No notes match that filter. Try a broader term.
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  const input = document.querySelector<HTMLInputElement>('[data-filter-input]');
+  const rows = Array.from(document.querySelectorAll<HTMLElement>('[data-post-row]'));
+  const count = document.querySelector<HTMLElement>('[data-filter-count]');
+  const empty = document.querySelector<HTMLElement>('[data-filter-empty]');
+
+  const applyFilter = () => {
+    if (!input) return;
+    const query = input.value.trim().toLowerCase();
+    const tokens = query.split(/\s+/).filter(Boolean);
+    let visible = 0;
+
+    for (const row of rows) {
+      const text = `${row.textContent ?? ''} ${row.dataset.tags ?? ''}`.toLowerCase();
+      const matches = tokens.every((token) => text.includes(token));
+      row.hidden = !matches;
+      if (matches) visible += 1;
+    }
+
+    if (count) {
+      count.textContent = query ? `${visible} of ${rows.length}` : `${rows.length} notes`;
+    }
+    if (empty) empty.hidden = visible > 0;
+  };
+
+  input?.addEventListener('input', applyFilter);
+</script>
