@@ -1,14 +1,14 @@
 import { getCollection, type CollectionEntry } from 'astro:content';
 import { readingTime, topicFromId, getTopic } from './site';
 
-export type Post = CollectionEntry<'writing'>;
+export type Post = CollectionEntry<'notes'>;
 
 export function postId(post: Post): string {
   return post.id.replace(/\.(md|mdx)$/i, '');
 }
 
 export function postPath(post: Post): string {
-  return `/writing/${postId(post)}/`;
+  return `/topics/notes/${postId(post)}/`;
 }
 
 export function postTopic(post: Post) {
@@ -20,7 +20,7 @@ export function postReadTime(post: Post): string {
 }
 
 export async function getPublishedPosts(): Promise<Post[]> {
-  const posts = await getCollection('writing', ({ data }) => data.draft !== true);
+  const posts = await getCollection('notes', ({ data }) => data.draft !== true);
   return posts.sort(
     (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
   );

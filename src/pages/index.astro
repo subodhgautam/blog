@@ -2,50 +2,41 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Search from '../components/Search.astro';
 import TopicCard from '../components/TopicCard.astro';
-import PostCard from '../components/PostCard.astro';
+import Newsletter from '../components/Newsletter.astro';
 import Icon from '../components/Icon.astro';
 import { TOPICS } from '../lib/site';
 import { getPublishedPosts, postTopic } from '../lib/posts';
+import { getPublishedGuides, guideTopic } from '../lib/guides';
 import { href } from '../lib/url';
 
 const posts = await getPublishedPosts();
-const latest = posts.slice(0, 6);
+const guides = await getPublishedGuides();
 
-const counts = Object.fromEntries(
+const noteCounts = Object.fromEntries(
   Object.keys(TOPICS).map((slug) => [
     slug,
     posts.filter((post) => postTopic(post).slug === slug).length,
   ]),
 );
+
+const guideCounts = Object.fromEntries(
+  Object.keys(TOPICS).map((slug) => [
+    slug,
+    guides.filter((guide) => guideTopic(guide).slug === slug).length,
+  ]),
+);
 ---
 
 <BaseLayout>
-  <section class="hero shell">
-    <span class="eyebrow reveal">
-      <span class="dot"></span>
-      Field notes for engineers
-    </span>
-
-    <h1 class="hero-title reveal reveal-1">
-      Learn the stack,<br />
-      <span class="gradient-text">one layer at a time.</span>
-    </h1>
-
-    <p class="hero-lede reveal reveal-2">
-      Practical notes on networking, scripting, Linux, and security. No hype, no
-      20-minute detours — just the mental models and commands that make systems
-      click.
-    </p>
-
-    <div class="hero-search reveal reveal-3">
-      <Search />
-    </div>
+  <section class="home-search shell">
+    <p class="home-kicker">Search guides and notes</p>
+    <Search />
   </section>
 
   <section class="section shell" id="topics">
     <div class="section-head">
       <div>
-        <p class="section-kicker">Browse by topic</p>
+        <p class="section-kicker">Browse the library</p>
         <h2 class="section-title">Pick a layer</h2>
       </div>
       <a class="section-link" href={href('/topics/')}>
@@ -55,49 +46,14 @@ const counts = Object.fromEntries(
 
     <div class="topic-grid">
       {Object.values(TOPICS).map((topic) => (
-        <TopicCard topic={topic} count={counts[topic.slug] ?? 0} />
+        <TopicCard
+          topic={topic}
+          notes={noteCounts[topic.slug] ?? 0}
+          guides={guideCounts[topic.slug] ?? 0}
+        />
       ))}
     </div>
   </section>
 
-  <section class="section shell">
-    <div class="section-head">
-      <div>
-        <p class="section-kicker">Fresh from the notebook</p>
-        <h2 class="section-title">Latest writing</h2>
-      </div>
-      <a class="section-link" href={href('/writing/')}>
-        View all notes <Icon name="arrow-right" size={16} />
-      </a>
-    </div>
-
-    {latest.length > 0 ? (
-      <div class="post-grid">
-        {latest.map((post, index) => (
-          <PostCard post={post} reveal={(index % 3) + 1} />
-        ))}
-      </div>
-    ) : (
-      <div class="empty-state">
-        No notes yet. Add a Markdown file under <code>src/content/</code> to get started.
-      </div>
-    )}
-  </section>
-
-  <section class="section shell">
-    <div class="section-head">
-      <div>
-        <p class="section-kicker">Start here</p>
-        <h2 class="section-title">New here? Follow the path.</h2>
-      </div>
-      <a class="btn btn-primary" href={href('/writing/')}>
-        Browse writing <Icon name="arrow-right" size={16} />
-      </a>
-    </div>
-    <p class="page-lede" style="margin-top:0">
-      Start with subnetting and DNS if you are learning networking, or jump into
-      PowerShell pipelines if you spend your day in a terminal. Every note is
-      written to be read once, then used as a reference.
-    </p>
-  </section>
+  <Newsletter />
 </BaseLayout>

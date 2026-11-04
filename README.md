@@ -1,8 +1,9 @@
 # Layer 8
 
-A reading-first Astro blog for networking, scripting, Linux, and security notes.
-It uses Astro content collections, a client-side search index, a switchable
-reading-room backdrop, RSS, sitemap, and a GitHub Pages deployment workflow.
+A reading-first Astro site for guides and field notes on networking, scripting,
+Linux, and security. It uses Astro content collections, a client-side search
+index, a switchable reading-room backdrop, RSS, sitemap, and a GitHub Pages
+deployment workflow.
 
 ## Quick start
 
@@ -14,27 +15,28 @@ npm run preview  # serve the production build
 npm run check    # Astro + TypeScript diagnostics
 ```
 
-## Writing a post
+## Content model
 
-1. Pick a topic folder under `src/content/`:
+The library has two kinds of content, both filed by topic:
+
+- **Guides** are ordered courses. Each guide is one long page with a table of
+  contents that stays collapsed until the reader opens it.
+- **Notes** are short reference pieces: a command, a failure mode, a worked
+  example.
+
+Notes live under **Topics**; guides have their own archive at `/guides/`. URLs
+are built from the collection, topic folder, and filename.
+
+## Writing a note
+
+1. Create the file under a topic folder:
 
    ```text
-   src/content/
-     networking/
-     scripting/
-     linux/
-     security/
-     notes/
+   src/content/notes/networking/how-bgp-picks-a-path.md
+   → /blog/topics/notes/networking/how-bgp-picks-a-path/
    ```
 
-2. Create a Markdown file. The URL is built from the folder and filename:
-
-   ```text
-   src/content/networking/how-bgp-picks-a-path.md
-   → /blog/writing/networking/how-bgp-picks-a-path/
-   ```
-
-3. Copy `templates/post.md` or start with this frontmatter:
+2. Copy `templates/post.md` or start with this frontmatter:
 
    ```yaml
    ---
@@ -46,19 +48,52 @@ npm run check    # Astro + TypeScript diagnostics
    ---
    ```
 
-4. Write the body in Markdown. Code fences get syntax highlighting and a table
-   of contents is generated from `##` and `###` headings.
+3. Write the body in Markdown. Code fences get syntax highlighting, and a
+   sidebar table of contents is generated from `##` and `###` headings.
+
+## Writing a guide
+
+1. Create the file under a topic folder:
+
+   ```text
+   src/content/guides/networking/reading-the-network-stack.md
+   → /blog/guides/networking/reading-the-network-stack/
+   ```
+
+2. Copy `templates/guide.md` or start with this frontmatter:
+
+   ```yaml
+   ---
+   title: 'Reading the network stack'
+   description: 'A guided tour from socket to wire.'
+   pubDate: 2026-11-01
+   updatedDate: 2026-11-03
+   level: 'Beginner'
+   order: 1
+   tags: ['tcp-ip', 'dns']
+   draft: false
+   ---
+   ```
+
+3. Use `##` sections for the main beats of the course. They become the
+   collapsible table of contents at the top of the guide and the floating
+   **Contents** button that stays available while reading. `###` headings appear
+   as indented entries.
+
+`order` controls where a guide sits within its topic. Lower numbers come first.
 
 ### Frontmatter reference
 
 | Field | Required | Notes |
 | --- | --- | --- |
-| `title` | yes | Post title. |
+| `title` | yes | Entry title. |
 | `description` | yes | One-sentence summary. |
 | `pubDate` | yes | `YYYY-MM-DD` or an ISO timestamp. |
 | `updatedDate` | no | Shows an “Updated” label. |
 | `tags` | no | Array of short strings. Defaults to `[]`. |
-| `draft` | no | `true` hides the post from the site, search, and RSS. |
+| `draft` | no | `true` hides the entry from the site, search, and RSS. |
+| `level` | guides only | `Beginner`, `Intermediate`, or `Advanced`. |
+| `order` | guides only | Number used to sort guides inside a topic. |
 
 Drafts are filtered out everywhere, so you can commit work in progress.
 
@@ -80,29 +115,46 @@ export const TOPICS = {
 ```
 
 Add an icon if you want a custom mark in `src/components/Icon.astro`. Then create
-`src/content/cloud/` and start writing. The home page, topic page, navigation
-counts, and sitemap update automatically.
+`src/content/notes/cloud/` and/or `src/content/guides/cloud/` and start writing.
+The home page, topic page, counts, and sitemap update automatically.
 
 ## Where things live
 
 ```text
 src/
-  components/      Header, footer, cards, search, ambience, icons
-  content/         Markdown posts, grouped by topic folder
-  content.config.ts  Frontmatter schema
-  layouts/         Base HTML shell
-  lib/             Site/topic metadata, post helpers, URL helpers
-  pages/           Home, writing archive, posts, topics, about, RSS, search index
-  styles/global.css  Design system and prose styles
+  components/        Header, footer, cards, search, newsletter, ambience, icons
+  content/
+    notes/<topic>/   Short field notes
+    guides/<topic>/  Ordered course guides
+  content.config.ts  Frontmatter schemas for notes and guides
+  layouts/           Base HTML shell
+  lib/               Site/topic metadata, note helpers, guide helpers, URLs
+  pages/
+    guides/          Guide catalog and individual guide pages
+    topics/          Topics catalog, notes archive, and note pages
+    index.astro      Search-first home page
+  styles/global.css  Design system, layout, and prose styles
 public/
-  wallpapers/      Reading-room backdrop SVGs
+  wallpapers/        Reading-room backdrop SVGs
   favicon.svg, .nojekyll
-templates/post.md  Frontmatter starter for new posts
+templates/
+  post.md            Frontmatter starter for a note
+  guide.md           Frontmatter starter for a guide
 ```
 
-`src/content/notes/lorem-ipsum-reading-room.md` is placeholder content for
-checking typography, code blocks, and the reading room. Delete it when the notes
-topic has real posts.
+`src/content/notes/meta/lorem-ipsum-reading-room.md` is placeholder content for
+checking typography, code blocks, and the reading room. Delete it when the Meta
+topic has real posts. `src/content/guides/networking/reading-the-network-stack.md`
+is a sample guide that demonstrates both the collapsible table of contents and
+the floating **Contents** button.
+
+## Newsletter signup
+
+The home page includes a newsletter form in `src/components/Newsletter.astro`.
+It validates the email and shows a success state, but it does **not** submit
+anywhere yet. Connect it to a provider (Buttondown, Mailchimp, Formspree, etc.)
+by adding the endpoint to `data-newsletter-endpoint` and replacing the client-side
+success handler with a `fetch` call.
 
 ## Reading room
 
@@ -152,10 +204,10 @@ The first deploy publishes at `https://<user>.github.io/<repo>/`.
 
 ## Search
 
-`src/pages/search.json.ts` generates a static search index at build time. The
-home page search bar fetches it on first focus and scores matches across titles,
-descriptions, tags, topics, and post bodies. No server or external search service
-is required.
+`src/pages/search.json.ts` generates a static search index at build time from
+both notes and guides. The home page search bar fetches it on first focus and
+scores matches across titles, descriptions, tags, topics, and bodies. No server
+or external search service is required.
 
 ## Notes
 

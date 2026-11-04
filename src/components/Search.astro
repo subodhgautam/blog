@@ -5,7 +5,7 @@ interface Props {
   placeholder?: string;
 }
 
-const { placeholder = 'Search notes, topics, or tags…' } = Astro.props;
+const { placeholder = 'Search guides, notes, topics, or tags…' } = Astro.props;
 
 const suggestions = ['subnetting', 'PowerShell pipelines', 'DNS', 'systemd'];
 ---
@@ -165,7 +165,7 @@ const suggestions = ['subnetting', 'PowerShell pipelines', 'DNS', 'systemd'];
         const empty = document.createElement('div');
         empty.className = 'search-empty';
         const strong = document.createElement('strong');
-        strong.textContent = `No notes matching “${query}”`;
+        strong.textContent = `No results matching “${query}”`;
         const hint = document.createElement('p');
         hint.textContent = 'Try a broader term, like networking, SSH, or variables.';
         empty.append(strong, hint);
@@ -175,7 +175,7 @@ const suggestions = ['subnetting', 'PowerShell pipelines', 'DNS', 'systemd'];
 
       const label = document.createElement('div');
       label.className = 'search-group-label';
-      label.textContent = `${matches.length} ${matches.length === 1 ? 'note' : 'notes'}`;
+      label.textContent = `${matches.length} ${matches.length === 1 ? 'result' : 'results'}`;
       panel.append(label);
 
       for (const entry of matches) {

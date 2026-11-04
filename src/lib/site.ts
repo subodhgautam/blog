@@ -1,9 +1,9 @@
 export const SITE = {
   name: 'Layer 8',
-  tagline: 'Notes from the command line',
-  title: 'Layer 8 — Field notes for engineers',
+  tagline: 'Guides from the command line',
+  title: 'Layer 8 — Guides and field notes for engineers',
   description:
-    'Clear, practical notes on networking, scripting, Linux, and security. Written for people who would rather understand the system than memorize the commands.',
+    'Structured guides and practical field notes on networking, scripting, Linux, and security. Written for people who would rather understand the system than memorize the commands.',
   author: 'Subodh Gautam',
   github: 'https://github.com/subodhgautam',
 };
@@ -70,11 +70,11 @@ export const TOPICS: Record<string, Topic> = {
     accent: '#e39b98',
     icon: 'shield',
   },
-  notes: {
-    slug: 'notes',
-    label: 'Notes',
+  meta: {
+    slug: 'meta',
+    label: 'Meta',
     description:
-      'Long-form samples, site notes, and quiet experiments with the reading room.',
+      'Site notes, samples, and quiet experiments with the reading room.',
     accent: '#c9ad86',
     icon: 'book',
   },

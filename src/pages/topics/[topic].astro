@@ -2,24 +2,24 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Icon from '../../components/Icon.astro';
 import PostRow from '../../components/PostRow.astro';
+import GuideCard from '../../components/GuideCard.astro';
 import { getTopic, TOPICS } from '../../lib/site';
-import { getPublishedPosts, getPostsByTopic, postTopic } from '../../lib/posts';
+import { getPostsByTopic } from '../../lib/posts';
+import { getGuidesByTopic } from '../../lib/guides';
 import { href } from '../../lib/url';
 
 export async function getStaticPaths() {
-  const posts = await getPublishedPosts();
-  const slugs = new Set([...Object.keys(TOPICS), ...posts.map(postTopic).map((topic) => topic.slug)]);
-
-  return [...slugs].map((topic) => ({ params: { topic } }));
+  return Object.keys(TOPICS).map((topic) => ({ params: { topic } }));
 }
 
 const slug = Astro.params.topic ?? '';
 const topic = getTopic(slug);
 const posts = await getPostsByTopic(slug);
+const guides = await getGuidesByTopic(slug);
 ---
 
 <BaseLayout
-  title={`${topic.label} notes`}
+  title={`${topic.label} guides and notes`}
   description={topic.description}
 >
   <div class="shell">
@@ -34,20 +34,49 @@ const posts = await getPostsByTopic(slug);
       <h1>{topic.label}</h1>
       <p>{topic.description}</p>
       <div class="topic-stats">
+        <span>{guides.length} {guides.length === 1 ? 'guide' : 'guides'}</span>
         <span>{posts.length} {posts.length === 1 ? 'note' : 'notes'}</span>
-        <span>Updated regularly</span>
       </div>
     </header>
 
-    <div class="post-list">
-      {posts.map((post) => <PostRow post={post} />)}
-    </div>
-
-    {posts.length === 0 && (
-      <div class="empty-state">
-        Nothing here yet. Add a Markdown file under <code>src/content/{slug}/</code>.
-      </div>
+    {guides.length > 0 && (
+      <section class="section" style="padding-top:0">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">Courses</p>
+            <h2 class="section-title">{topic.label} guides</h2>
+          </div>
+          <a class="section-link" href={href('/guides/')}>
+            All guides <Icon name="arrow-right" size={16} />
+          </a>
+        </div>
+        <div class="guide-grid">
+          {guides.map((guide) => <GuideCard guide={guide} />)}
+        </div>
+      </section>
     )}
+
+    <section class="section" style="padding-top:0">
+      <div class="section-head">
+        <div>
+          <p class="section-kicker">Field notes</p>
+          <h2 class="section-title">{topic.label} notes</h2>
+        </div>
+        <a class="section-link" href={href('/topics/notes/')}>
+          All notes <Icon name="arrow-right" size={16} />
+        </a>
+      </div>
+
+      {posts.length > 0 ? (
+        <div class="post-list">
+          {posts.map((post) => <PostRow post={post} />)}
+        </div>
+      ) : (
+        <div class="empty-state">
+          Nothing filed here yet. Add a Markdown file under <code>src/content/notes/{slug}/</code>.
+        </div>
+      )}
+    </section>
 
     <div class="section" style="padding-top:10px">
       <p class="section-kicker" style="margin-bottom:12px">Other topics</p>

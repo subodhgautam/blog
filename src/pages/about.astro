@@ -7,7 +7,7 @@ import { href } from '../lib/url';
 
 <BaseLayout
   title="About"
-  description="About Layer 8: a reading-first notebook for networking, scripting, Linux, and security."
+  description="About Layer 8: guided courses and field notes for networking, scripting, Linux, and security."
 >
   <div class="narrow">
     <header class="page-head">
@@ -17,15 +17,16 @@ import { href } from '../lib/url';
 
     <div class="prose" style="padding-bottom:40px">
       <p>
-        <strong>{SITE.name}</strong> is a reading-first notebook about the parts of
+        <strong>{SITE.name}</strong> is a reading-first library about the parts of
         computing that are easy to use and hard to explain: packets, names,
         processes, shells, and the trust boundaries between them.
       </p>
 
       <p>
-        Most posts start as a note to myself. Something broke, I learned why, and
-        I wrote it down in a form I would want to find next time. The goal is not
-        to cover everything. It is to make a small number of ideas genuinely clear.
+        Guides are built as ordered paths through a topic. Notes are the smaller
+        pieces: something broke, I learned why, and I wrote down the part I would
+        want to find next time. The goal is not to cover everything. It is to make
+        a small number of ideas genuinely clear.
       </p>
 
       <h2>What you will find here</h2>
@@ -41,9 +42,10 @@ import { href } from '../lib/url';
       <h2>How to read it</h2>
 
       <p>
-        Start with a topic, or use the search bar on the home page. Notes are
-        filed by topic rather than by date, so a single area reads like a short
-        course. Each post ends with related notes if you want to keep going.
+        Start with a guide when you want the full path, or use the search bar on
+        the home page when you need a specific answer. Notes are filed by topic
+        rather than by date, so a single area reads like a short course. Each
+        piece ends with related material if you want to keep going.
       </p>
 
       <h2>Who writes this</h2>
@@ -59,10 +61,11 @@ import { href } from '../lib/url';
       </blockquote>
     </div>
 
-    <div style="padding-bottom:60px">
-      <a class="btn btn-primary" href={href('/writing/')}>
-        Read the notes <Icon name="arrow-right" size={16} />
+    <div style="display:flex;gap:10px;flex-wrap:wrap;padding-bottom:60px">
+      <a class="btn btn-primary" href={href('/guides/')}>
+        Start a guide <Icon name="arrow-right" size={16} />
       </a>
+      <a class="btn" href={href('/topics/notes/')}>Read the notes</a>
     </div>
   </div>
 </BaseLayout>

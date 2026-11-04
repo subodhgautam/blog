@@ -5,10 +5,11 @@ import { href } from '../lib/url';
 
 interface Props {
   topic: Topic;
-  count: number;
+  notes: number;
+  guides?: number;
 }
 
-const { topic, count } = Astro.props;
+const { topic, notes, guides = 0 } = Astro.props;
 ---
 
 <a class="topic-card" href={href(`/topics/${topic.slug}/`)} style={`--accent: ${topic.accent};`}>
@@ -16,7 +17,7 @@ const { topic, count } = Astro.props;
   <h3>{topic.label}</h3>
   <p>{topic.description}</p>
   <span class="topic-foot">
-    {count} {count === 1 ? 'note' : 'notes'}
+    {notes} {notes === 1 ? 'note' : 'notes'}{guides > 0 ? ` · ${guides} ${guides === 1 ? 'guide' : 'guides'}` : ''}
     <Icon name="arrow-right" size={16} />
   </span>
 </a>

@@ -1,0 +1,45 @@
+---
+import Icon from './Icon.astro';
+import {
+  guidePath,
+  guideReadTime,
+  guideSections,
+  guideTopic,
+  type Guide,
+} from '../lib/guides';
+import { href } from '../lib/url';
+
+interface Props {
+  guide: Guide;
+  reveal?: number;
+}
+
+const { guide, reveal } = Astro.props;
+const topic = guideTopic(guide);
+const sections = guideSections(guide);
+---
+
+<a
+  class:list={['guide-card', reveal ? `reveal reveal-${reveal}` : '']}
+  href={href(guidePath(guide))}
+  style={`--accent: ${topic.accent};`}
+>
+  <span class="guide-card-top">
+    <span class="topic-badge">
+      <Icon name={topic.icon} size={16} />
+      {topic.label}
+    </span>
+    <span class="guide-level">{guide.data.level}</span>
+  </span>
+
+  <h3 class="guide-card-title">{guide.data.title}</h3>
+
+  <p class="guide-card-desc">{guide.data.description}</p>
+
+  <span class="guide-card-foot">
+    <span>{sections} {sections === 1 ? 'section' : 'sections'} · {guideReadTime(guide)}</span>
+    <span class="guide-card-link" aria-hidden="true">
+      <Icon name="arrow-right" size={16} />
+    </span>
+  </span>
+</a>

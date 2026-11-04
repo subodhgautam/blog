@@ -1,0 +1,31 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import GuideCard from '../../components/GuideCard.astro';
+import { getPublishedGuides } from '../../lib/guides';
+
+const guides = await getPublishedGuides();
+---
+
+<BaseLayout
+  title="Guides"
+  description="Structured, worked-through guides for networking, scripting, Linux, and security."
+>
+  <div class="shell">
+    <header class="page-head">
+      <span class="eyebrow"><span class="dot"></span> The courses</span>
+      <h1>Guides</h1>
+      <p class="page-lede">
+        Longer, ordered paths through a topic. Open a guide and read straight
+        through, or pull up the table of contents when you want to jump.
+      </p>
+    </header>
+
+    {guides.length > 0 ? (
+      <div class="guide-grid">
+        {guides.map((guide, index) => <GuideCard guide={guide} reveal={(index % 3) + 1} />)}
+      </div>
+    ) : (
+      <div class="empty-state">No guides yet. The first course is being written.</div>
+    )}
+  </div>
+</BaseLayout>

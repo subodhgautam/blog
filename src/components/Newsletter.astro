@@ -1,0 +1,59 @@
+---
+import Icon from './Icon.astro';
+---
+
+<section class="section shell">
+  <div class="newsletter reveal">
+    <div class="newsletter-copy">
+      <p class="section-kicker">Stay in the loop</p>
+      <h2 class="newsletter-title">Get the next guide in your inbox.</h2>
+      <p class="newsletter-lede">
+        One short email when a new guide or field note ships. No digest, no
+        noise, just the next thing worth reading.
+      </p>
+    </div>
+
+    <!-- Connect data-newsletter-endpoint to your provider before launch. -->
+    <form class="newsletter-form" data-newsletter data-newsletter-endpoint="" novalidate>
+      <label class="sr-only" for="newsletter-email">Email address</label>
+      <input
+        id="newsletter-email"
+        name="email"
+        type="email"
+        placeholder="you@example.com"
+        autocomplete="email"
+        required
+      />
+      <button class="btn btn-primary" type="submit">
+        Notify me <Icon name="arrow-right" size={16} />
+      </button>
+      <p class="newsletter-status" data-newsletter-status role="status" aria-live="polite"></p>
+    </form>
+  </div>
+</section>
+
+<script>
+  const form = document.querySelector<HTMLFormElement>('[data-newsletter]');
+
+  if (form) {
+    const input = form.querySelector<HTMLInputElement>('input[type="email"]');
+    const status = form.querySelector<HTMLElement>('[data-newsletter-status]');
+
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      if (!input || !status) return;
+
+      if (!input.value.trim() || !input.checkValidity()) {
+        status.textContent = 'Enter a valid email address.';
+        status.classList.add('is-error');
+        input.focus();
+        return;
+      }
+
+      status.classList.remove('is-error');
+      status.textContent = "Thanks — you're on the list.";
+      input.value = '';
+      form.reset();
+    });
+  }
+</script>

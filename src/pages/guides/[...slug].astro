@@ -1,0 +1,216 @@
+---
+import { render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Icon from '../../components/Icon.astro';
+import PostCard from '../../components/PostCard.astro';
+import { formatDate } from '../../lib/site';
+import { href } from '../../lib/url';
+import {
+  getPublishedGuides,
+  guideId,
+  guidePath,
+  guideReadTime,
+  guideSections,
+  guideTopic,
+} from '../../lib/guides';
+import { getPostsByTopic } from '../../lib/posts';
+
+export async function getStaticPaths() {
+  const guides = await getPublishedGuides();
+  return guides.map((guide) => ({
+    params: { slug: guideId(guide) },
+    props: { guide },
+  }));
+}
+
+const { guide } = Astro.props;
+const { Content, headings } = await render(guide);
+
+const topic = guideTopic(guide);
+const allGuides = await getPublishedGuides();
+const index = allGuides.findIndex((entry) => entry.id === guide.id);
+const previous = index > 0 ? allGuides[index - 1] : undefined;
+const next = index >= 0 && index < allGuides.length - 1 ? allGuides[index + 1] : undefined;
+const notes = await getPostsByTopic(topic.slug);
+
+const toc = headings.filter((heading) => heading.depth === 2 || heading.depth === 3);
+const sections = toc.filter((heading) => heading.depth === 2).length;
+---
+
+<BaseLayout title={guide.data.title} description={guide.data.description} type="article">
+  <div class="reading-progress" data-progress aria-hidden="true"></div>
+
+  <div class="shell guide-shell">
+    <article class="guide-article" style={`--accent: ${topic.accent};`}>
+      <header class="article-header">
+        <nav class="breadcrumb" aria-label="Breadcrumb">
+          <a href={href('/')}>Home</a>
+          <span class="sep">/</span>
+          <a href={href('/guides/')}>Guides</a>
+          <span class="sep">/</span>
+          <a href={href(`/topics/${topic.slug}/`)}>{topic.label}</a>
+        </nav>
+
+        <div class="guide-badges">
+          <a class="topic-badge" href={href(`/topics/${topic.slug}/`)}>
+            <Icon name={topic.icon} size={16} />
+            {topic.label}
+          </a>
+          <span class="guide-level">{guide.data.level}</span>
+        </div>
+
+        <h1 class="article-title">{guide.data.title}</h1>
+        <p class="article-lede">{guide.data.description}</p>
+
+        <div class="article-meta">
+          <span class="meta-item">
+            <Icon name="clock" size={14} />
+            {guideReadTime(guide)}
+          </span>
+          <span class="meta-item">{guideSections(guide)} sections</span>
+          <time class="meta-item" datetime={guide.data.pubDate.toISOString()}>
+            {formatDate(guide.data.pubDate)}
+          </time>
+          {guide.data.updatedDate && (
+            <span class="meta-item">
+              Updated {formatDate(guide.data.updatedDate)}
+            </span>
+          )}
+        </div>
+      </header>
+
+      {toc.length > 0 && (
+        <details class="guide-toc">
+          <summary>
+            <span class="guide-toc-label">
+              <Icon name="book" size={16} />
+              Table of contents
+            </span>
+            <span class="guide-toc-count">{sections} {sections === 1 ? 'section' : 'sections'}</span>
+          </summary>
+          <ol class="guide-toc-list">
+            {toc.map((heading, position) => (
+              <li class:list={['guide-toc-item', heading.depth === 3 ? 'is-sub' : '']}>
+                <a href={`#${heading.slug}`}>
+                  <span class="guide-toc-num">{String(position + 1).padStart(2, '0')}</span>
+                  <span class="guide-toc-text">{heading.text}</span>
+                  <span class="guide-toc-arrow"><Icon name="arrow-right" size={15} /></span>
+                </a>
+              </li>
+            ))}
+          </ol>
+        </details>
+      )}
+
+      <div class="article-body prose">
+        <Content />
+      </div>
+
+      <footer class="article-footer">
+        {guide.data.tags.length > 0 && (
+          <div class="article-tags">
+            <span class="label">Filed under</span>
+            {guide.data.tags.map((tag) => <span class="tag">#{tag}</span>)}
+          </div>
+        )}
+
+        <nav class="pager" aria-label="Guide navigation">
+          {previous ? (
+            <a class="pager-link" href={href(guidePath(previous))}>
+              <span class="pager-label"><Icon name="arrow-left" size={13} /> Previous guide</span>
+              <span class="pager-title">{previous.data.title}</span>
+            </a>
+          ) : (
+            <span></span>
+          )}
+          {next ? (
+            <a class="pager-link next" href={href(guidePath(next))}>
+              <span class="pager-label">Next guide <Icon name="arrow-right" size={13} /></span>
+              <span class="pager-title">{next.data.title}</span>
+            </a>
+          ) : (
+            <span></span>
+          )}
+        </nav>
+      </footer>
+    </article>
+  </div>
+
+  {notes.length > 0 && (
+    <section class="section">
+      <div class="shell related">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">Practice</p>
+            <h2 class="section-title">Notes for this guide</h2>
+          </div>
+          <a class="section-link" href={href(`/topics/${topic.slug}/`)}>
+            More {topic.label.toLowerCase()} <Icon name="arrow-right" size={16} />
+          </a>
+        </div>
+        <div class="post-grid">
+          {notes.slice(0, 3).map((post) => <PostCard post={post} />)}
+        </div>
+      </div>
+    </section>
+  )}
+
+  {toc.length > 0 && (
+    <details class="toc-float" data-toc-float>
+      <summary>
+        <Icon name="book" size={16} />
+        <span>Contents</span>
+      </summary>
+      <nav class="toc-float-panel" aria-label="Guide contents">
+        <p class="toc-float-title">On this page</p>
+        <ol>
+          {toc.map((heading) => (
+            <li class:list={[heading.depth === 3 ? 'is-sub' : '']}>
+              <a href={`#${heading.slug}`}>{heading.text}</a>
+            </li>
+          ))}
+        </ol>
+      </nav>
+    </details>
+  )}
+</BaseLayout>
+
+<script>
+  const bar = document.querySelector<HTMLElement>('[data-progress]');
+  const body = document.querySelector<HTMLElement>('.article-body');
+
+  if (bar && body) {
+    let ticking = false;
+
+    const update = () => {
+      const rect = body.getBoundingClientRect();
+      const available = rect.height - window.innerHeight * 0.5;
+      const progress = available > 0 ? -rect.top / available : 0;
+      bar.style.transform = `scaleX(${Math.min(1, Math.max(0, progress))})`;
+      ticking = false;
+    };
+
+    const onScroll = () => {
+      if (ticking) return;
+      ticking = true;
+      window.requestAnimationFrame(update);
+    };
+
+    update();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll, { passive: true });
+  }
+
+  document.querySelectorAll<HTMLElement>('.guide-toc a, .toc-float a').forEach((link) => {
+    link.addEventListener('click', (event) => {
+      const target = document.querySelector<HTMLElement>(link.getAttribute('href') ?? '');
+      if (!target) return;
+      event.preventDefault();
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      history.replaceState(null, '', link.getAttribute('href'));
+
+      const floating = link.closest<HTMLDetailsElement>('.toc-float');
+      if (floating) floating.open = false;
+    });
+  });
+</script>

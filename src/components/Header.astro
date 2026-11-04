@@ -10,7 +10,7 @@ const current = rawPath.startsWith(base) ? rawPath.slice(base.length) || '/' : r
 
 const links = [
   { label: 'Home', path: '/', match: (p: string) => p === '/' },
-  { label: 'Writing', path: '/writing/', match: (p: string) => p.startsWith('/writing') },
+  { label: 'Guides', path: '/guides/', match: (p: string) => p.startsWith('/guides') },
   { label: 'Topics', path: '/topics/', match: (p: string) => p.startsWith('/topics') },
   { label: 'About', path: '/about/', match: (p: string) => p.startsWith('/about') },
 ];
