@@ -1,5 +1,6 @@
 ---
 import Icon from './Icon.astro';
+import { entryDescription, entryTitle } from '../lib/content';
 import {
   guidePath,
   guideReadTime,
@@ -17,6 +18,8 @@ interface Props {
 const { guide, reveal } = Astro.props;
 const topic = guideTopic(guide);
 const sections = guideSections(guide);
+const title = entryTitle(guide);
+const description = entryDescription(guide, 'guide');
 ---
 
 <a
@@ -32,9 +35,9 @@ const sections = guideSections(guide);
     <span class="guide-level">{guide.data.level}</span>
   </span>
 
-  <h3 class="guide-card-title">{guide.data.title}</h3>
+  <h3 class="guide-card-title">{title}</h3>
 
-  <p class="guide-card-desc">{guide.data.description}</p>
+  <p class="guide-card-desc">{description}</p>
 
   <span class="guide-card-foot">
     <span>{sections} {sections === 1 ? 'section' : 'sections'} · {guideReadTime(guide)}</span>

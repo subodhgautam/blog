@@ -2,25 +2,26 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import TopicCard from '../../components/TopicCard.astro';
 import Icon from '../../components/Icon.astro';
-import { TOPICS } from '../../lib/site';
+import { getAllTopics } from '../../lib/topics';
 import { getPublishedPosts, postTopic } from '../../lib/posts';
 import { getPublishedGuides, guideTopic } from '../../lib/guides';
 import { href } from '../../lib/url';
 
 const posts = await getPublishedPosts();
 const guides = await getPublishedGuides();
+const topics = await getAllTopics();
 
 const noteCounts = Object.fromEntries(
-  Object.keys(TOPICS).map((slug) => [
-    slug,
-    posts.filter((post) => postTopic(post).slug === slug).length,
+  topics.map((topic) => [
+    topic.slug,
+    posts.filter((post) => postTopic(post).slug === topic.slug).length,
   ]),
 );
 
 const guideCounts = Object.fromEntries(
-  Object.keys(TOPICS).map((slug) => [
-    slug,
-    guides.filter((guide) => guideTopic(guide).slug === slug).length,
+  topics.map((topic) => [
+    topic.slug,
+    guides.filter((guide) => guideTopic(guide).slug === topic.slug).length,
   ]),
 );
 ---
@@ -40,7 +41,7 @@ const guideCounts = Object.fromEntries(
     </header>
 
     <div class="topic-grid">
-      {Object.values(TOPICS).map((topic) => (
+      {topics.map((topic) => (
         <TopicCard
           topic={topic}
           notes={noteCounts[topic.slug] ?? 0}

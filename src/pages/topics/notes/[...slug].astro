@@ -6,6 +6,13 @@ import PostCard from '../../../components/PostCard.astro';
 import { SITE, formatDate } from '../../../lib/site';
 import { href } from '../../../lib/url';
 import {
+  entryDescription,
+  entryPublished,
+  entryShowUpdated,
+  entryTitle,
+  entryUpdated,
+} from '../../../lib/content';
+import {
   getPublishedPosts,
   postId,
   postPath,
@@ -32,6 +39,12 @@ const newer = index > 0 ? posts[index - 1] : undefined;
 const older = index >= 0 && index < posts.length - 1 ? posts[index + 1] : undefined;
 const related = relatedPosts(posts, post, 3);
 
+const title = entryTitle(post);
+const description = entryDescription(post, 'note');
+const published = entryPublished(post);
+const updated = entryUpdated(post);
+const showUpdated = entryShowUpdated(post);
+
 const toc = headings
   .filter((heading) => heading.depth === 2 || heading.depth === 3)
   .slice(0, 14);
@@ -44,7 +57,7 @@ const initials = SITE.author
   .toUpperCase();
 ---
 
-<BaseLayout title={post.data.title} description={post.data.description} type="article">
+<BaseLayout title={title} description={description} type="article">
   <div class="reading-progress" data-progress aria-hidden="true"></div>
 
   <div class="shell article">
@@ -66,8 +79,8 @@ const initials = SITE.author
             {topic.label}
           </a>
 
-          <h1 class="article-title">{post.data.title}</h1>
-          <p class="article-lede">{post.data.description}</p>
+          <h1 class="article-title">{title}</h1>
+          <p class="article-lede">{description}</p>
 
           <div class="article-meta">
             <span class="author">
@@ -78,12 +91,12 @@ const initials = SITE.author
               <Icon name="clock" size={14} />
               {postReadTime(post)}
             </span>
-            <time class="meta-item" datetime={post.data.pubDate.toISOString()}>
-              {formatDate(post.data.pubDate)}
+            <time class="meta-item" datetime={published.toISOString()}>
+              {formatDate(published)}
             </time>
-            {post.data.updatedDate && (
+            {showUpdated && (
               <span class="meta-item">
-                Updated {formatDate(post.data.updatedDate)}
+                Updated {formatDate(updated)}
               </span>
             )}
           </div>
@@ -105,7 +118,7 @@ const initials = SITE.author
             {older ? (
               <a class="pager-link" href={href(postPath(older))}>
                 <span class="pager-label"><Icon name="arrow-left" size={13} /> Previous note</span>
-                <span class="pager-title">{older.data.title}</span>
+                <span class="pager-title">{entryTitle(older)}</span>
               </a>
             ) : (
               <span></span>
@@ -113,7 +126,7 @@ const initials = SITE.author
             {newer ? (
               <a class="pager-link next" href={href(postPath(newer))}>
                 <span class="pager-label">Next note <Icon name="arrow-right" size={13} /></span>
-                <span class="pager-title">{newer.data.title}</span>
+                <span class="pager-title">{entryTitle(newer)}</span>
               </a>
             ) : (
               <span></span>

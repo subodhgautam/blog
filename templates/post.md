@@ -1,11 +1,14 @@
 ---
-title: 'Your post title goes here'
-description: 'One sentence that explains what the reader will learn. Used in cards, search, and SEO.'
-pubDate: 2026-11-03
-# updatedDate: 2026-11-10
-tags: ['tag-one', 'tag-two']
+# Every field below is optional. Delete anything you do not need.
+# title:       defaults to the first heading, then the filename
+# description: defaults to the first paragraph
+# pubDate:     defaults to the file's first git commit, then its timestamp
+# updatedDate: defaults to the file's latest git commit
+# tags: ['tag-one', 'tag-two']
 draft: false
 ---
+
+# Your note title
 
 Open with the problem or the question. Keep it short and concrete.
 

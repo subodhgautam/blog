@@ -1,8 +1,11 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Icon from '../components/Icon.astro';
-import { SITE, TOPICS } from '../lib/site';
+import { SITE } from '../lib/site';
+import { getAllTopics } from '../lib/topics';
 import { href } from '../lib/url';
+
+const topics = await getAllTopics();
 ---
 
 <BaseLayout
@@ -32,7 +35,7 @@ import { href } from '../lib/url';
       <h2>What you will find here</h2>
 
       <ul>
-        {Object.values(TOPICS).map((topic) => (
+        {topics.map((topic) => (
           <li>
             <strong>{topic.label}</strong> — {topic.description}
           </li>

@@ -6,6 +6,13 @@ import PostCard from '../../components/PostCard.astro';
 import { formatDate } from '../../lib/site';
 import { href } from '../../lib/url';
 import {
+  entryDescription,
+  entryPublished,
+  entryShowUpdated,
+  entryTitle,
+  entryUpdated,
+} from '../../lib/content';
+import {
   getPublishedGuides,
   guideId,
   guidePath,
@@ -35,9 +42,15 @@ const notes = await getPostsByTopic(topic.slug);
 
 const toc = headings.filter((heading) => heading.depth === 2 || heading.depth === 3);
 const sections = toc.filter((heading) => heading.depth === 2).length;
+
+const title = entryTitle(guide);
+const description = entryDescription(guide, 'guide');
+const published = entryPublished(guide);
+const updated = entryUpdated(guide);
+const showUpdated = entryShowUpdated(guide);
 ---
 
-<BaseLayout title={guide.data.title} description={guide.data.description} type="article">
+<BaseLayout title={title} description={description} type="article">
   <div class="reading-progress" data-progress aria-hidden="true"></div>
 
   <div class="shell guide-shell">
@@ -59,28 +72,28 @@ const sections = toc.filter((heading) => heading.depth === 2).length;
           <span class="guide-level">{guide.data.level}</span>
         </div>
 
-        <h1 class="article-title">{guide.data.title}</h1>
-        <p class="article-lede">{guide.data.description}</p>
+        <h1 class="article-title">{title}</h1>
+        <p class="article-lede">{description}</p>
 
         <div class="article-meta">
           <span class="meta-item">
             <Icon name="clock" size={14} />
             {guideReadTime(guide)}
           </span>
-          <span class="meta-item">{guideSections(guide)} sections</span>
-          <time class="meta-item" datetime={guide.data.pubDate.toISOString()}>
-            {formatDate(guide.data.pubDate)}
+          <span class="meta-item">{guideSections(guide) === 1 ? '1 section' : `${guideSections(guide)} sections`}</span>
+          <time class="meta-item" datetime={published.toISOString()}>
+            {formatDate(published)}
           </time>
-          {guide.data.updatedDate && (
+          {showUpdated && (
             <span class="meta-item">
-              Updated {formatDate(guide.data.updatedDate)}
+              Updated {formatDate(updated)}
             </span>
           )}
         </div>
       </header>
 
       {toc.length > 0 && (
-        <details class="guide-toc">
+        <details class="guide-toc" data-toc-anchor>
           <summary>
             <span class="guide-toc-label">
               <Icon name="book" size={16} />
@@ -118,7 +131,7 @@ const sections = toc.filter((heading) => heading.depth === 2).length;
           {previous ? (
             <a class="pager-link" href={href(guidePath(previous))}>
               <span class="pager-label"><Icon name="arrow-left" size={13} /> Previous guide</span>
-              <span class="pager-title">{previous.data.title}</span>
+              <span class="pager-title">{entryTitle(previous)}</span>
             </a>
           ) : (
             <span></span>
@@ -126,7 +139,7 @@ const sections = toc.filter((heading) => heading.depth === 2).length;
           {next ? (
             <a class="pager-link next" href={href(guidePath(next))}>
               <span class="pager-label">Next guide <Icon name="arrow-right" size={13} /></span>
-              <span class="pager-title">{next.data.title}</span>
+              <span class="pager-title">{entryTitle(next)}</span>
             </a>
           ) : (
             <span></span>
@@ -156,13 +169,13 @@ const sections = toc.filter((heading) => heading.depth === 2).length;
   )}
 
   {toc.length > 0 && (
-    <details class="toc-float" data-toc-float>
-      <summary>
+    <details class="toc-float" data-toc-float inert>
+      <summary aria-label="Open contents">
         <Icon name="book" size={16} />
         <span>Contents</span>
       </summary>
       <nav class="toc-float-panel" aria-label="Guide contents">
-        <p class="toc-float-title">On this page</p>
+        <p class="toc-float-title">Jump to</p>
         <ol>
           {toc.map((heading) => (
             <li class:list={[heading.depth === 3 ? 'is-sub' : '']}>
@@ -201,6 +214,30 @@ const sections = toc.filter((heading) => heading.depth === 2).length;
     window.addEventListener('resize', onScroll, { passive: true });
   }
 
+  const floatingToc = document.querySelector<HTMLDetailsElement>('[data-toc-float]');
+  const tocAnchor = document.querySelector<HTMLElement>('[data-toc-anchor]');
+
+  if (floatingToc && tocAnchor) {
+    let visible = false;
+
+    const setVisible = (next: boolean) => {
+      if (next === visible) return;
+      visible = next;
+      floatingToc.classList.toggle('is-visible', next);
+      floatingToc.toggleAttribute('inert', !next);
+      if (!next) floatingToc.open = false;
+    };
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setVisible(!entry.isIntersecting && entry.boundingClientRect.top < 0);
+      },
+      { threshold: 0 },
+    );
+
+    observer.observe(tocAnchor);
+  }
+
   document.querySelectorAll<HTMLElement>('.guide-toc a, .toc-float a').forEach((link) => {
     link.addEventListener('click', (event) => {
       const target = document.querySelector<HTMLElement>(link.getAttribute('href') ?? '');
@@ -211,6 +248,9 @@ const sections = toc.filter((heading) => heading.depth === 2).length;
 
       const floating = link.closest<HTMLDetailsElement>('.toc-float');
       if (floating) floating.open = false;
+
+      const parentDetails = link.closest<HTMLDetailsElement>('details');
+      if (parentDetails && parentDetails !== floating) parentDetails.open = false;
     });
   });
 </script>

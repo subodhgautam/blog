@@ -3,19 +3,22 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import Icon from '../../components/Icon.astro';
 import PostRow from '../../components/PostRow.astro';
 import GuideCard from '../../components/GuideCard.astro';
-import { getTopic, TOPICS } from '../../lib/site';
+import { getTopic } from '../../lib/site';
+import { getAllTopics } from '../../lib/topics';
 import { getPostsByTopic } from '../../lib/posts';
 import { getGuidesByTopic } from '../../lib/guides';
 import { href } from '../../lib/url';
 
 export async function getStaticPaths() {
-  return Object.keys(TOPICS).map((topic) => ({ params: { topic } }));
+  const topics = await getAllTopics();
+  return topics.map((topic) => ({ params: { topic: topic.slug } }));
 }
 
 const slug = Astro.params.topic ?? '';
 const topic = getTopic(slug);
 const posts = await getPostsByTopic(slug);
 const guides = await getGuidesByTopic(slug);
+const topics = await getAllTopics();
 ---
 
 <BaseLayout
@@ -81,7 +84,7 @@ const guides = await getGuidesByTopic(slug);
     <div class="section" style="padding-top:10px">
       <p class="section-kicker" style="margin-bottom:12px">Other topics</p>
       <div class="tag-row">
-        {Object.values(TOPICS)
+        {topics
           .filter((item) => item.slug !== slug)
           .map((item) => (
             <a class="btn" href={href(`/topics/${item.slug}/`)} style={`--accent: ${item.accent};`}>

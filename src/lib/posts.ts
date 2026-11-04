@@ -1,5 +1,6 @@
 import { getCollection, type CollectionEntry } from 'astro:content';
 import { readingTime, topicFromId, getTopic } from './site';
+import { entryPublished } from './content';
 
 export type Post = CollectionEntry<'notes'>;
 
@@ -22,7 +23,7 @@ export function postReadTime(post: Post): string {
 export async function getPublishedPosts(): Promise<Post[]> {
   const posts = await getCollection('notes', ({ data }) => data.draft !== true);
   return posts.sort(
-    (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
+    (a, b) => entryPublished(b).valueOf() - entryPublished(a).valueOf(),
   );
 }
 
@@ -40,7 +41,11 @@ export function relatedPosts(posts: Post[], current: Post, limit = 3): Post[] {
       const sharedTags = post.data.tags.filter((tag) => currentTags.has(tag)).length;
       return { post, score: sameTopic + sharedTags };
     })
-    .sort((a, b) => b.score - a.score || b.post.data.pubDate.valueOf() - a.post.data.pubDate.valueOf())
+    .sort(
+      (a, b) =>
+        b.score - a.score ||
+        entryPublished(b.post).valueOf() - entryPublished(a.post).valueOf(),
+    )
     .slice(0, limit)
     .map(({ post }) => post);
 }

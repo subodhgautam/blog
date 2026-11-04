@@ -1,4 +1,5 @@
 import type { APIRoute } from 'astro';
+import { entryDescription, entryTitle } from '../lib/content';
 import { getPublishedPosts, postPath, postTopic } from '../lib/posts';
 import { getPublishedGuides, guidePath, guideTopic } from '../lib/guides';
 import { href } from '../lib/url';
@@ -19,8 +20,8 @@ export const GET: APIRoute = async () => {
     const topic = postTopic(post);
 
     return {
-      title: post.data.title,
-      description: post.data.description,
+      title: entryTitle(post),
+      description: entryDescription(post, 'note'),
       category: topic.slug,
       categoryLabel: topic.label,
       accent: topic.accent,
@@ -34,8 +35,8 @@ export const GET: APIRoute = async () => {
     const topic = guideTopic(guide);
 
     return {
-      title: guide.data.title,
-      description: guide.data.description,
+      title: entryTitle(guide),
+      description: entryDescription(guide, 'guide'),
       category: topic.slug,
       categoryLabel: `Guide · ${topic.label}`,
       accent: topic.accent,

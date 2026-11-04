@@ -29,94 +29,147 @@ are built from the collection, topic folder, and filename.
 
 ## Writing a note
 
-1. Create the file under a topic folder:
+1. Create the file under any topic folder:
 
    ```text
    src/content/notes/networking/how-bgp-picks-a-path.md
    → /blog/topics/notes/networking/how-bgp-picks-a-path/
    ```
 
-2. Copy `templates/post.md` or start with this frontmatter:
+2. Write Markdown. Frontmatter is **optional**:
+
+   ```md
+   # How BGP picks a path
+
+   Open with the problem or the question.
+
+   ## A section heading
+
+   Explain the idea with a small example.
+   ```
+
+   The title comes from the first heading (or filename), the description from
+   the first paragraph, and the date from the file's git history. Add frontmatter
+   only when you want to override something:
 
    ```yaml
    ---
-   title: 'How BGP picks a path'
-   description: 'A short summary used on cards, in search, and in SEO tags.'
-   pubDate: 2026-11-03
+   title: 'How BGP picks a path'          # optional
+   description: 'A short summary.'        # optional
+   pubDate: 2026-11-03                    # optional
+   updatedDate: 2026-11-10                # optional
    tags: ['bgp', 'routing']
    draft: false
    ---
    ```
 
-3. Write the body in Markdown. Code fences get syntax highlighting, and a
-   sidebar table of contents is generated from `##` and `###` headings.
+3. Code fences get syntax highlighting, and a sidebar table of contents is
+   generated from `##` and `###` headings.
 
 ## Writing a guide
 
-1. Create the file under a topic folder:
+1. Create the file under any topic folder:
 
    ```text
    src/content/guides/networking/reading-the-network-stack.md
    → /blog/guides/networking/reading-the-network-stack/
    ```
 
-2. Copy `templates/guide.md` or start with this frontmatter:
+2. Start with a first-level heading and `##` sections:
+
+   ```md
+   # Reading the network stack
+
+   Open with the outcome.
+
+   ## Start with the program
+
+   ## Follow the route
+
+   ## Triage checklist
+   ```
+
+   The `##` sections become the collapsible contents list at the top of the
+   guide and the floating **Contents** button that appears once that list has
+   scrolled away. `###` headings appear as indented entries.
+
+3. Optional frontmatter controls ordering and level:
 
    ```yaml
    ---
-   title: 'Reading the network stack'
-   description: 'A guided tour from socket to wire.'
-   pubDate: 2026-11-01
-   updatedDate: 2026-11-03
    level: 'Beginner'
    order: 1
-   tags: ['tcp-ip', 'dns']
    draft: false
    ---
    ```
 
-3. Use `##` sections for the main beats of the course. They become the
-   collapsible table of contents at the top of the guide and the floating
-   **Contents** button that stays available while reading. `###` headings appear
-   as indented entries.
-
 `order` controls where a guide sits within its topic. Lower numbers come first.
+Unordered guides sort newest first.
 
 ### Frontmatter reference
 
-| Field | Required | Notes |
-| --- | --- | --- |
-| `title` | yes | Entry title. |
-| `description` | yes | One-sentence summary. |
-| `pubDate` | yes | `YYYY-MM-DD` or an ISO timestamp. |
-| `updatedDate` | no | Shows an “Updated” label. |
-| `tags` | no | Array of short strings. Defaults to `[]`. |
-| `draft` | no | `true` hides the entry from the site, search, and RSS. |
-| `level` | guides only | `Beginner`, `Intermediate`, or `Advanced`. |
-| `order` | guides only | Number used to sort guides inside a topic. |
+Every field is optional.
+
+| Field | Notes |
+| --- | --- |
+| `title` | Defaults to the first heading, then the filename. |
+| `description` | Defaults to the first paragraph. |
+| `pubDate` | Defaults to the file's first git commit, then its timestamp. |
+| `updatedDate` | Defaults to the latest git commit. Shown when it differs from the publish date. |
+| `tags` | Array of short strings. Defaults to `[]`. |
+| `draft` | `true` hides the entry from the site, search, and RSS. |
+| `level` | Guides only: `Beginner`, `Intermediate`, or `Advanced`. |
+| `order` | Guides only: number used to sort guides inside a topic. |
 
 Drafts are filtered out everywhere, so you can commit work in progress.
 
 ## Adding a new topic
 
-Topics are configured in `src/lib/site.ts`:
+Create a folder and add a note or guide. Nothing else is required:
 
-```ts
-// src/lib/site.ts
-export const TOPICS = {
-  cloud: {
-    slug: 'cloud',
-    label: 'Cloud',
-    description: 'IAM, networking, and the parts of cloud that bite.',
-    accent: '#34d399',
-    icon: 'network',
-  },
-};
+```text
+src/content/notes/physics/first-law.md
+src/content/guides/physics/motion-basics.md
 ```
 
-Add an icon if you want a custom mark in `src/components/Icon.astro`. Then create
-`src/content/notes/cloud/` and/or `src/content/guides/cloud/` and start writing.
-The home page, topic page, counts, and sitemap update automatically.
+A **Physics** topic card, topic page, counts, search entries, and sitemap URLs
+appear on the next build. The folder name is the slug, so keep it lowercase
+with hyphens instead of spaces.
+
+To control the wording and look without touching code, add a `_topic.json` to
+the topic folder (either collection; notes wins if both exist):
+
+```text
+src/content/notes/physics/_topic.json
+```
+
+```json
+{
+  "label": "Physics",
+  "description": "Motion, forces, and the models that make them predictable.",
+  "accent": "#a8c98f",
+  "icon": "book",
+  "order": 1
+}
+```
+
+Every key is optional — include only what you want to override:
+
+| Key | Notes |
+| --- | --- |
+| `label` | Display name. Defaults to the title-cased folder name. |
+| `description` | Shown on topic cards and the topic page. |
+| `accent` | Hex color for the card badge and accents. |
+| `icon` | One of the icons in `src/components/Icon.astro` (`book`, `network`, `terminal`, `shield`, `powershell`, `layers`, …). |
+| `order` | Sort position for topics that are not declared in `TOPICS`. |
+
+The file is JSON on purpose: the content loader only scans `.md` / `.mdx`, so it
+is never treated as an article. A missing or malformed `_topic.json` is ignored
+and the generated values are used instead.
+
+`TOPICS` in `src/lib/site.ts` still works for the curated topics and acts as a
+fallback; a `_topic.json` takes precedence over it. A folder with no published
+note or guide never appears.
 
 ## Where things live
 
@@ -126,9 +179,9 @@ src/
   content/
     notes/<topic>/   Short field notes
     guides/<topic>/  Ordered course guides
-  content.config.ts  Frontmatter schemas for notes and guides
+  content.config.ts  Schema for notes and guides (all fields optional)
   layouts/           Base HTML shell
-  lib/               Site/topic metadata, note helpers, guide helpers, URLs
+  lib/               Site/topic metadata, entry dates and titles, note and guide helpers
   pages/
     guides/          Guide catalog and individual guide pages
     topics/          Topics catalog, notes archive, and note pages
@@ -138,15 +191,31 @@ public/
   wallpapers/        Reading-room backdrop SVGs
   favicon.svg, .nojekyll
 templates/
-  post.md            Frontmatter starter for a note
-  guide.md           Frontmatter starter for a guide
+  post.md            Starter for a note (frontmatter optional)
+  guide.md           Starter for a guide (frontmatter optional)
+  topic.json         Optional metadata for a new topic folder
 ```
 
 `src/content/notes/meta/lorem-ipsum-reading-room.md` is placeholder content for
-checking typography, code blocks, and the reading room. Delete it when the Meta
-topic has real posts. `src/content/guides/networking/reading-the-network-stack.md`
-is a sample guide that demonstrates both the collapsible table of contents and
-the floating **Contents** button.
+checking typography, code blocks, and the reading room. Delete the file (and the
+`meta` entry in `src/lib/site.ts`, if you added one) when you no longer want the
+Meta topic. `src/content/guides/networking/reading-the-network-stack.md` is a
+sample guide that demonstrates both the collapsible table of contents and the
+floating **Contents** button.
+
+## Automatic dates
+
+Entries without a `pubDate` use the file's first git commit date. Existing files
+with `pubDate` keep that date. `updatedDate` follows the latest commit unless you
+set it explicitly. Before the first commit, a new file falls back to its own
+timestamp, so it still appears in the right order while you are writing.
+
+Leave the field out — or leave the line empty (`pubDate:`). Both mean "automatic".
+Only a real value is treated as an override.
+
+The deployment workflow checks out the full git history (`fetch-depth: 0`) so
+these dates survive on GitHub Pages. If you copy the project without its `.git`
+folder, add `pubDate` to keep dates stable.
 
 ## Newsletter signup
 

@@ -1627,22 +1627,26 @@ html[data-theme='light'] .theme-toggle .icon-moon {
 }
 
 .guide-toc {
-  margin-top: 26px;
-  border-radius: var(--radius);
+  margin-top: 28px;
+  border-radius: 14px;
   border: 1px solid var(--border);
-  background: var(--surface);
+  border-left: 2px solid color-mix(in srgb, var(--accent, var(--brand)) 52%, transparent);
+  background:
+    linear-gradient(180deg, var(--surface), color-mix(in srgb, var(--bg-soft) 26%, transparent));
   overflow: hidden;
 }
 
 .guide-toc summary {
   display: flex;
   align-items: center;
-  gap: 14px;
-  padding: 16px 18px;
+  gap: 10px;
+  padding: 15px 18px;
   list-style: none;
   cursor: pointer;
   color: var(--text-soft);
-  font-weight: 600;
+  font-size: 0.82rem;
+  font-weight: 650;
+  letter-spacing: 0.01em;
   transition: background 0.18s ease;
 }
 
@@ -1655,24 +1659,19 @@ html[data-theme='light'] .theme-toggle .icon-moon {
 }
 
 .guide-toc summary::after {
-  content: '+';
-  display: grid;
-  place-items: center;
-  width: 28px;
-  height: 28px;
-  margin-left: 4px;
-  border-radius: 50%;
-  border: 1px solid var(--border);
-  color: var(--muted);
-  font-size: 1rem;
-  line-height: 1;
-  transition: color 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
+  content: '';
+  width: 7px;
+  height: 7px;
+  margin-left: 2px;
+  border-right: 1.5px solid var(--muted);
+  border-bottom: 1.5px solid var(--muted);
+  transform: rotate(45deg);
+  transition: transform 0.22s ease, border-color 0.22s ease;
 }
 
 .guide-toc[open] summary::after {
-  content: '−';
-  color: var(--brand);
-  border-color: color-mix(in srgb, var(--brand) 40%, transparent);
+  transform: rotate(225deg);
+  border-color: var(--brand);
 }
 
 .guide-toc-label {
@@ -1688,61 +1687,78 @@ html[data-theme='light'] .theme-toggle .icon-moon {
 .guide-toc-count {
   margin-left: auto;
   color: var(--faint);
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   font-weight: 600;
+  letter-spacing: 0.02em;
 }
 
 .guide-toc-list {
   display: grid;
-  gap: 6px;
+  gap: 0;
   margin: 0;
-  padding: 0 12px 12px;
+  padding: 2px 18px 12px;
   list-style: none;
+  border-top: 1px solid var(--border);
 }
 
 .guide-toc-item a {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 12px 14px;
-  border-radius: 14px;
-  border: 1px solid var(--border);
-  background: color-mix(in srgb, var(--bg-soft) 55%, transparent);
-  transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr);
+  align-items: baseline;
+  gap: 10px;
+  padding: 10px 2px;
+  border: 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 72%, transparent);
+  border-radius: 0;
+  background: none;
+  transition: color 0.16s ease;
+}
+
+.guide-toc-item:last-child a {
+  border-bottom: 0;
 }
 
 .guide-toc-item a:hover {
-  transform: translateX(2px);
-  border-color: var(--border-strong);
-  background: var(--surface-hover);
+  color: var(--brand);
+  background: none;
+  transform: none;
 }
 
 .guide-toc-item.is-sub a {
-  margin-left: 22px;
+  margin-left: 24px;
+  grid-template-columns: 22px minmax(0, 1fr);
+  padding-block: 7px;
+  border-bottom-color: transparent;
 }
 
 .guide-toc-num {
   color: var(--faint);
   font-family: var(--font-mono);
-  font-size: 0.68rem;
+  font-size: 0.66rem;
+  transition: color 0.16s ease;
+}
+
+.guide-toc-item.is-sub .guide-toc-num {
+  opacity: 0;
+}
+
+.guide-toc-item a:hover .guide-toc-num {
+  color: var(--brand);
 }
 
 .guide-toc-text {
-  flex: 1;
-  color: var(--text-soft);
-  font-size: 0.85rem;
-  font-weight: 550;
-  line-height: 1.4;
+  color: inherit;
+  font-size: 0.86rem;
+  font-weight: 500;
+  line-height: 1.45;
+}
+
+.guide-toc-item.is-sub .guide-toc-text {
+  font-size: 0.8rem;
 }
 
 .guide-toc-arrow {
-  color: var(--faint);
-  transition: color 0.18s ease, transform 0.18s ease;
-}
-
-.guide-toc-item a:hover .guide-toc-arrow {
-  color: var(--brand);
-  transform: translateX(2px);
+  display: none;
 }
 
 /* Floating contents -------------------------------------------------------- */
@@ -1752,6 +1768,36 @@ html[data-theme='light'] .theme-toggle .icon-moon {
   right: clamp(14px, 2.5vw, 26px);
   bottom: clamp(14px, 2.5vw, 26px);
   z-index: 90;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(14px) scale(0.96);
+  transition:
+    opacity 0.24s ease,
+    transform 0.3s cubic-bezier(0.2, 0.9, 0.3, 1.16),
+    visibility 0.3s;
+}
+
+.toc-float.is-visible {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0) scale(1);
+}
+
+.toc-float.is-visible > summary {
+  animation: toc-nudge 0.7s ease 0.12s 1;
+}
+
+@keyframes toc-nudge {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-4px);
+  }
+  62% {
+    transform: translateY(0);
+  }
 }
 
 .toc-float > summary {

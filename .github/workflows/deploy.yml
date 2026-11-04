@@ -20,6 +20,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          # Full history lets the site derive publish/update dates from git.
+          fetch-depth: 0
 
       - name: Build with Astro
         uses: withastro/action@v3

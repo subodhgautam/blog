@@ -1,5 +1,6 @@
 import { getCollection, type CollectionEntry } from 'astro:content';
 import { getTopic, readingTime, topicFromId } from './site';
+import { entryPublished } from './content';
 
 export type Guide = CollectionEntry<'guides'>;
 
@@ -28,7 +29,7 @@ export async function getPublishedGuides(): Promise<Guide[]> {
   return guides.sort(
     (a, b) =>
       a.data.order - b.data.order ||
-      b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
+      entryPublished(b).valueOf() - entryPublished(a).valueOf(),
   );
 }
 
